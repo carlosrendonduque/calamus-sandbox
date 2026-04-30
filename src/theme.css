@@ -1,0 +1,42 @@
+:root {
+  --calamus-bg: #0a0a0a;
+  --calamus-fg: #e6e2d3;
+  --calamus-muted: #8a8478; /* en calamus el "muted" se llama --calamus-muted */
+  --calamus-accent: #d4a155;
+  --calamus-border: #2a2a2a;
+  --calamus-panel: #141414;
+  --calamus-terminal-bg: #050505;
+  --calamus-terminal-fg: #d4a155;
+  --calamus-terminal-muted: #6a6358;
+  --calamus-terminal-emphasis: #f0d9a8;
+  --calamus-terminal-eof: #4a443a;
+  --calamus-terminal-border: #2a2418;
+  --calamus-serif-font: "Georgia", serif;
+  --calamus-mono-font: "JetBrains Mono", "Menlo", monospace;
+}
+
+/* `calamus` define defaults dentro de `.calamus-root`, así que apuntamos también ahí
+   para asegurar que esta hoja de estilos sobreescriba el tema. */
+:where(.calamus-root) {
+  --calamus-bg: #0a0a0a;
+  --calamus-fg: #e6e2d3;
+  --calamus-muted: #8a8478;
+  --calamus-accent: #d4a155;
+  --calamus-border: #2a2a2a;
+  --calamus-panel: #141414;
+  --calamus-terminal-bg: #050505;
+  --calamus-terminal-fg: #d4a155;
+  --calamus-terminal-muted: #6a6358;
+  --calamus-terminal-emphasis: #f0d9a8;
+  --calamus-terminal-eof: #4a443a;
+  --calamus-terminal-border: #2a2418;
+  --calamus-serif-font: "Georgia", serif;
+  --calamus-mono-font: "JetBrains Mono", "Menlo", monospace;
+}
+
+body {
+  margin: 0;
+  background: var(--calamus-terminal-bg);
+  color: var(--calamus-terminal-fg);
+}
+
