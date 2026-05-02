@@ -29,6 +29,7 @@ Importante: ejecuta comandos npm dentro de `calamus-sandbox` (no desde el direct
 
 ## Qué incluye hoy
 
+- **Runbook lineal** (olas E–L, Biblia sonora y handoff ordenado): `AGENTS.md` y el panel «Runbook» en la UI; puntero en `src/sandboxRunbookState.ts`.
 - Selector rápido de modos (`scroll`, `book`, `terminal`, `editorial`, `hypertext`).
 - Playground de escenarios fijos de consumo.
 - Prop Lab para probar combinaciones de props en vivo.
@@ -57,6 +58,11 @@ Este comando ejecuta en cadena:
 
 1. `calamus`: `build` + `typecheck`
 2. `calamus-sandbox`: `build`
+
+## Estado de handoff (runbook)
+
+- `runbook-11-nullheim-handoff`: implementado en `nullheim` con la ruta `"/matriz-handoff"` y comando de terminal `matriz`.
+- Restricción vigente: handoff a `nullheim` como experiencia propia; no mover esta línea a Scriptorium.
 
 ## Template para nuevo caso de regresión
 

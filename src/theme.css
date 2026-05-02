@@ -40,3 +40,8 @@ body {
   color: var(--calamus-terminal-fg);
 }
 
+/* Anclas del runbook (#sandbox-ola-*) */
+[id^="sandbox-"] {
+  scroll-margin-top: 1.25rem;
+}
+

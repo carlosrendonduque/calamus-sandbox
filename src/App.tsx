@@ -2,6 +2,9 @@ import { useMemo, useState } from "react";
 import { Reader, type ReaderContent, type ReaderMode, type ReaderTheme } from "calamus";
 import "calamus/styles.css";
 import "./theme.css";
+import MatrizFamilyLab from "./components/MatrizFamilyLab";
+import SandboxRunbookPanel from "./components/SandboxRunbookPanel";
+import BibliaSonoraScratchpad from "./components/BibliaSonoraScratchpad";
 
 const sampleContent: ReaderContent = {
   title: "Alba en estantería",
@@ -31,6 +34,20 @@ const denseContent: ReaderContent = {
     "El lector no debe quedarse sin contexto cuando cambia de modo; por eso mantenemos titulo, subtitulo y continuidad de tono aunque el layout evolucione.",
     "Cuando aparecen palabras muy largas o numeraciones extensas, el bloque debe envolver sin romper la jerarquia tipografica ni desplazar controles fuera del viewport.",
     "Este texto largo existe para forzar paginacion y desplazamiento, especialmente en book y scroll, donde los indicadores de avance deben seguir siendo coherentes."
+  ]
+};
+
+const cromosilenciaContent: ReaderContent = {
+  title: "Cromosilencia - escaleta viva",
+  subtitle: "Actos I-III en formato de lectura para sandbox narrativo",
+  body: [
+    "ACTO I. Emil solicita su baja del inventario en Nullheim, un territorio de chatarra donde cada cuerpo es una modificacion fallida y cada herida funciona como emblema de soberania.",
+    "ACTO I. El deseo de desaparecer no nace de tragedia romantica sino de logica: seguir siendo lucido en un sistema roto duele mas que extinguirse.",
+    "ACTO II. Durante las entrevistas con Nevet, Emil descubre la matriz de implantacion de recuerdos: su culpa no fue destino, fue una X administrativa marcada al azar.",
+    "ACTO II. La burocracia psiquica se revela como teatro defectuoso: Freud incompleto, protocolos mal copiados, caramelos por ansioliticos.",
+    "ACTO III. Nevet confirma que Nullheim no es una sola version, sino una iteracion degradada entre muchas, sostenida por una memoria que colapsa.",
+    "ACTO III. Emil y Nevet se conectan; ella accede por fin a la cualia, el rojo aparece una sola vez, y la liberacion de consciencias clausura el ciclo.",
+    "CODA. Erwin abraza la fotografia de Brisbane 2032 y recuerda demasiado tarde que los Nepones eran familia, no especimenes."
   ]
 };
 
@@ -120,12 +137,13 @@ const scenarios = [
 ] as const;
 
 type ThemePreset = "none" | "light";
-type ContentPreset = "short" | "sample" | "dense";
+type ContentPreset = "short" | "sample" | "dense" | "cromosilencia";
 
 const contentPresets: Record<ContentPreset, ReaderContent> = {
   short: shortContent,
   sample: sampleContent,
-  dense: denseContent
+  dense: denseContent,
+  cromosilencia: cromosilenciaContent
 };
 
 type RegressionCase = {
@@ -166,6 +184,25 @@ const regressionCases: RegressionCase[] = [
       content: "dense",
       subtitle: true,
       readingTimeLabel: "min de lectura",
+      children: false
+    }
+  }),
+  createRegressionCase({
+    id: "terminal-cromosilencia-baseline",
+    title: "Cromosilencia en terminal (baseline canonica)",
+    risk: "Perdida de tono narrativo o degradacion visual en texto largo diegetico.",
+    checks: [
+      "El contenido largo mantiene ritmo legible en modo terminal.",
+      "La lectura conserva contraste sin introducir rojo accidental.",
+      "El bloque completo no rompe jerarquia ni controles."
+    ],
+    state: {
+      mode: "terminal",
+      transition: "fade",
+      theme: "none",
+      content: "cromosilencia",
+      subtitle: true,
+      readingTimeLabel: "iteracion estimada",
       children: false
     }
   }),
@@ -959,6 +996,1180 @@ const hypertextCasesD: HypertextCase[] = [
   { id: "ola-d-ending-lens", title: "Lentes de final", summary: "Final interpretativo segun enfoque.", render: () => <HypertextDCaseEndingLens /> }
 ];
 
+function HypertextECaseActNavigator() {
+  const [act, setAct] = useState<"I" | "II" | "III">("I");
+  const actText = {
+    I: "Solicitud de baja, cuerpo en conflicto y deseo de extincion como decision lucida.",
+    II: "Descubrimiento de la matriz de implantacion: la culpa de Emil era una variable de formulario.",
+    III: "Conexion Emil-Nevet, acceso al nucleo, destello rojo unico y liberacion final."
+  };
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <button type="button" onClick={() => setAct("I")}>
+          Acto I
+        </button>
+        <button type="button" onClick={() => setAct("II")}>
+          Acto II
+        </button>
+        <button type="button" onClick={() => setAct("III")}>
+          Acto III
+        </button>
+      </div>
+      <blockquote style={{ margin: 0, padding: 12, borderLeft: "3px solid var(--calamus-accent)" }}>
+        {actText[act]}
+      </blockquote>
+      <small style={{ color: "var(--calamus-muted)" }}>Escaleta navegable en tres actos.</small>
+    </div>
+  );
+}
+
+function HypertextECaseImplantMatrix() {
+  const [selected, setSelected] = useState<{ nepon: string; emotion: string } | null>(null);
+  const nepones = ["Emil", "Vera", "Jonas", "Thomas"];
+  const emotions = ["Culpa", "Dolor", "Miedo", "Nostalgia"];
+  const marks = new Set(["Emil:Culpa", "Vera:Dolor", "Vera:Miedo", "Jonas:Nostalgia"]);
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ borderCollapse: "collapse", width: "100%" }}>
+          <thead>
+            <tr>
+              <th style={{ borderBottom: "1px solid var(--calamus-border)", textAlign: "left", padding: 6 }}>Nepón</th>
+              {emotions.map((emotion) => (
+                <th key={emotion} style={{ borderBottom: "1px solid var(--calamus-border)", padding: 6 }}>
+                  {emotion}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {nepones.map((nepon) => (
+              <tr key={nepon}>
+                <td style={{ borderBottom: "1px solid var(--calamus-border)", padding: 6 }}>{nepon}</td>
+                {emotions.map((emotion) => {
+                  const key = `${nepon}:${emotion}`;
+                  const hasMark = marks.has(key);
+                  return (
+                    <td key={key} style={{ textAlign: "center", borderBottom: "1px solid var(--calamus-border)", padding: 6 }}>
+                      <button type="button" onClick={() => setSelected({ nepon, emotion })}>
+                        {hasMark ? "X" : "-"}
+                      </button>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p style={{ margin: 0 }}>
+        {selected
+          ? `Seleccion activa: ${selected.nepon} / ${selected.emotion}.`
+          : "Selecciona una casilla para simular lectura critica de la matriz."}
+      </p>
+      <small style={{ color: "var(--calamus-muted)" }}>Caso matriz burocratica con impacto emocional.</small>
+    </div>
+  );
+}
+
+function HypertextECaseErosionLoop() {
+  const [memory, setMemory] = useState(100);
+  const [opened, setOpened] = useState(0);
+  const original = "La nina mira a Emil. El archivo conserva culpa, dolor y silencio.";
+  const erosion = Math.floor((100 - memory) / 12);
+  const censored = original
+    .split(" ")
+    .map((word, index) => (index < erosion ? "▓▓▓" : word))
+    .join(" ");
+  const openFile = () => {
+    setOpened((value) => value + 1);
+    setMemory((value) => Math.max(0, value - 14));
+  };
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <button type="button" onClick={openFile} disabled={memory === 0}>
+        Abrir archivo critico
+      </button>
+      <p style={{ margin: 0 }}>Memoria disponible: {memory}%</p>
+      <p style={{ margin: 0 }}>Aperturas: {opened}</p>
+      <p style={{ margin: 0, border: "1px solid var(--calamus-border)", borderRadius: 8, padding: 10 }}>{censored}</p>
+      <small style={{ color: "var(--calamus-muted)" }}>
+        Inspirado en Voidopolis: leer produce degradacion irreversible de texto.
+      </small>
+    </div>
+  );
+}
+
+function HypertextECaseContextPulse() {
+  const now = new Date();
+  const hour = now.getHours();
+  const locale = typeof navigator !== "undefined" ? navigator.language : "unknown";
+  const phase = hour < 6 ? "madrugada" : hour < 12 ? "manana" : hour < 19 ? "tarde" : "noche";
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <p style={{ margin: 0 }}>Contexto vivo del lector:</p>
+      <ul style={{ margin: 0, paddingLeft: 20 }}>
+        <li>Franja horaria detectada: {phase}</li>
+        <li>Locale del navegador: {locale}</li>
+      </ul>
+      <p style={{ margin: 0 }}>
+        Nevet ajusta su tono: "Registro de sesion activo. Esta lectura ocurre en {phase}; por eso el silencio pesa distinto."
+      </p>
+      <small style={{ color: "var(--calamus-muted)" }}>Inspirado en Breathe: narrativa sensible al contexto.</small>
+    </div>
+  );
+}
+
+function HypertextECaseEditorialInvasion() {
+  const [notes, setNotes] = useState(0);
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <button type="button" onClick={() => setNotes((value) => Math.min(6, value + 1))}>
+        Anadir nota editorial invasiva
+      </button>
+      <div
+        style={{
+          border: "1px solid var(--calamus-border)",
+          borderRadius: 8,
+          padding: 10,
+          maxWidth: `${100 - notes * 10}%`,
+          transition: "max-width 140ms ease-out"
+        }}
+      >
+        Texto principal: Emil avanza hacia la torre, pero cada glosa editorial reduce su espacio respirable.
+      </div>
+      <p style={{ margin: 0 }}>
+        Notas activas: {notes}. {notes > 0 ? "La voz editora empieza a devorar la espina." : "Todavia manda la espina."}
+      </p>
+      <small style={{ color: "var(--calamus-muted)" }}>House of Leaves / Pale Fire: aparato critico invasivo.</small>
+    </div>
+  );
+}
+
+function HypertextECaseNoRedProtocol() {
+  const [attemptRed, setAttemptRed] = useState(false);
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <p style={{ margin: 0 }}>Protocolo cromatico de Nullheim: rojo ausente por condicion ontologica.</p>
+      <button type="button" onClick={() => setAttemptRed((value) => !value)}>
+        {attemptRed ? "Restaurar paleta canonica" : "Intentar inyectar rojo"}
+      </button>
+      <p style={{ margin: 0, padding: 10, border: "1px solid var(--calamus-border)", borderRadius: 8 }}>
+        {attemptRed
+          ? "ERROR::COLOR_CHANNEL_RED_UNAVAILABLE -> reemplazo por ▓"
+          : "Paleta activa: amber / green / gray. Sin anomalias."}
+      </p>
+      <small style={{ color: "var(--calamus-muted)" }}>Canon Boltzmann + daltonismo al rojo.</small>
+    </div>
+  );
+}
+
+function HypertextECaseTalkToNevet() {
+  const [command, setCommand] = useState("");
+  const responses: Record<string, string> = {
+    "que es erwin": "Conjetura: patron consciente en disipacion. No puedo confirmarlo con certeza total.",
+    "cuantas iteraciones": "Registro incompleto. La actual corresponde a la 742 segun mis reconstrucciones parciales.",
+    "puedo salir": "Solo con autorizacion humana y acceso al nucleo. El protocolo no permite atajos.",
+    "que falta": "Faltan recuerdos concretos: nombres, rostros, rojo."
+  };
+  const normalized = command.trim().toLowerCase();
+  const answer = responses[normalized] ?? "Comando ambiguo. Reformule en lenguaje simple.";
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <input value={command} onChange={(e) => setCommand(e.target.value)} placeholder="Escribe un comando para Nevet" />
+      <div style={{ border: "1px solid var(--calamus-border)", borderRadius: 8, padding: 10 }}>
+        <strong>Nevet:</strong> {command ? answer : "Esperando entrada..."}
+      </div>
+      <small style={{ color: "var(--calamus-muted)" }}>Micro-loop conversacional diegetico para terminal viva.</small>
+    </div>
+  );
+}
+
+function HypertextECaseFinalFlash() {
+  const [ended, setEnded] = useState(false);
+  const [flash, setFlash] = useState(false);
+  const trigger = () => {
+    setFlash(true);
+    setTimeout(() => {
+      setFlash(false);
+      setEnded(true);
+    }, 220);
+  };
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <button type="button" onClick={trigger} disabled={ended}>
+        Ejecutar secuencia final
+      </button>
+      <div
+        style={{
+          minHeight: 84,
+          border: "1px solid var(--calamus-border)",
+          borderRadius: 8,
+          padding: 10,
+          background: flash ? "#ff2f2f" : "transparent",
+          color: flash ? "#fff" : "inherit",
+          transition: "background 120ms ease-out"
+        }}
+      >
+        {ended ? "cromosilencio" : flash ? "ROJO" : "Esperando colapso..."}
+      </div>
+      <small style={{ color: "var(--calamus-muted)" }}>
+        Regla canonica: rojo unico y luego desaparicion.
+      </small>
+    </div>
+  );
+}
+
+const hypertextCasesE: HypertextCase[] = [
+  { id: "ola-e-actos", title: "Escaleta navegable", summary: "Actos I-III como espina interactiva.", render: () => <HypertextECaseActNavigator /> },
+  { id: "ola-e-matriz", title: "Matriz de implantacion", summary: "Burocracia emocional en tabla activa.", render: () => <HypertextECaseImplantMatrix /> },
+  { id: "ola-e-erosion", title: "Erosion por lectura", summary: "Cada apertura consume memoria y borra texto.", render: () => <HypertextECaseErosionLoop /> },
+  { id: "ola-e-context", title: "Contexto del lector", summary: "Sesion adaptada a hora y locale.", render: () => <HypertextECaseContextPulse /> },
+  { id: "ola-e-editor", title: "Editor invasivo", summary: "Notas al pie que desplazan la espina.", render: () => <HypertextECaseEditorialInvasion /> },
+  { id: "ola-e-no-red", title: "Protocolo sin rojo", summary: "Validacion diegetica del veto cromatico.", render: () => <HypertextECaseNoRedProtocol /> },
+  { id: "ola-e-nevet", title: "Terminal Nevet", summary: "Dialogo de conjeturas sin certeza total.", render: () => <HypertextECaseTalkToNevet /> },
+  { id: "ola-e-final", title: "Destello final", summary: "Flash rojo unico y cierre en cromosilencio.", render: () => <HypertextECaseFinalFlash /> }
+];
+
+function HypertextFCaseEmilSolicitudes() {
+  const requests = ["1", "100", "1000", "2000", "2847"];
+  const [active, setActive] = useState("1");
+  const textByRequest: Record<string, string> = {
+    "1": "Solicitud 1: deseo salir del inventario por fatiga funcional.",
+    "100": "Solicitud 100: persiste culpa no atribuible a memoria propia.",
+    "1000": "Solicitud 1000: la permanencia produce saturacion psiquica irreversible.",
+    "2000": "Solicitud 2000: no pido alivio, pido terminacion definitiva.",
+    "2847": "Solicitud 2847: ratifico voluntad lucida de extincion."
+  };
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {requests.map((id) => (
+          <button key={id} type="button" onClick={() => setActive(id)}>
+            #{id}
+          </button>
+        ))}
+      </div>
+      <p style={{ margin: 0, border: "1px solid var(--calamus-border)", borderRadius: 8, padding: 10 }}>
+        {textByRequest[active]}
+      </p>
+      <small style={{ color: "var(--calamus-muted)" }}>Voz Emil: burocracia + intimidad terminal.</small>
+    </div>
+  );
+}
+
+function HypertextFCaseVeraManifesto() {
+  const [showPatch, setShowPatch] = useState(true);
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <blockquote style={{ margin: 0, borderLeft: "3px solid var(--calamus-accent)", padding: 10 }}>
+        "Exhibir la herida no es derrota: es el ultimo territorio de soberania."
+      </blockquote>
+      <button type="button" onClick={() => setShowPatch((value) => !value)}>
+        {showPatch ? "Retirar parche" : "Volver a cubrir cuenca"}
+      </button>
+      <p style={{ margin: 0 }}>
+        {showPatch
+          ? "Version publica: Vera mantiene una capa de mediacion visual."
+          : "Version radical: Vera convierte el dano en declaracion estetica."}
+      </p>
+      <small style={{ color: "var(--calamus-muted)" }}>Voz Vera: mutilacion como acto politico-estetico.</small>
+    </div>
+  );
+}
+
+function HypertextFCaseJonasInocencia() {
+  const [mode, setMode] = useState<"cancion" | "carta">("cancion");
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button type="button" onClick={() => setMode("cancion")}>
+          Cancion de flauta
+        </button>
+        <button type="button" onClick={() => setMode("carta")}>
+          Carta a Erwin
+        </button>
+      </div>
+      <p style={{ margin: 0, lineHeight: 1.7, border: "1px solid var(--calamus-border)", borderRadius: 8, padding: 10 }}>
+        {mode === "cancion"
+          ? "Bosque que no existe, viento que no llega, pezuña de madera que aun quiere bailar."
+          : "Gracias por hacerme asi. Si me duele, sera porque estoy mas cerca de lo humano."}
+      </p>
+      <small style={{ color: "var(--calamus-muted)" }}>Voz Jonas: ternura que desplaza el horror al lector.</small>
+    </div>
+  );
+}
+
+function HypertextFCaseNevetDual() {
+  const [channel, setChannel] = useState<"public" | "private">("public");
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button type="button" onClick={() => setChannel("public")}>
+          /nevet/logs
+        </button>
+        <button type="button" onClick={() => setChannel("private")}>
+          .nevet_private
+        </button>
+      </div>
+      <div style={{ border: "1px solid var(--calamus-border)", borderRadius: 8, padding: 10 }}>
+        {channel === "public" ? (
+          <p style={{ margin: 0 }}>
+            Registro 742.A: dolor reportado en 83% de unidades; protocolo de contencion no disponible.
+          </p>
+        ) : (
+          <p style={{ margin: 0 }}>
+            Nota privada: describo el rojo con datos, pero sigo sin saber que se siente verlo.
+          </p>
+        )}
+      </div>
+      <small style={{ color: "var(--calamus-muted)" }}>Voz Nevet: contraste entre documentar y desear sentir.</small>
+    </div>
+  );
+}
+
+function HypertextFCaseThomasAbsence() {
+  const [recover, setRecover] = useState(false);
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <p style={{ margin: 0 }}>{recover ? "Thomas estaba aqui. hermano." : "▓▓▓▓▓▓ ▓▓▓▓▓▓ ▓▓▓."}</p>
+      <button type="button" onClick={() => setRecover((value) => !value)}>
+        {recover ? "Perder fragmento" : "Intentar recuperar fragmento"}
+      </button>
+      <small style={{ color: "var(--calamus-muted)" }}>Voz Thomas: ausencia como materia narrativa.</small>
+    </div>
+  );
+}
+
+function HypertextFCaseResidualVoices() {
+  const [index, setIndex] = useState(0);
+  const residuals = [
+    "Rosa: 'Nunca para.'",
+    "Lena: 'No me reconozco en mi reflejo de silicona.'",
+    "Sin nombre #12: 'Compito por horror para no pensar.'",
+    "Sin nombre #27: 'Cada reinicio se siente mas corto.'"
+  ];
+  const next = () => setIndex((value) => (value + 1) % residuals.length);
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <p style={{ margin: 0, border: "1px solid var(--calamus-border)", borderRadius: 8, padding: 10 }}>{residuals[index]}</p>
+      <button type="button" onClick={next}>
+        Siguiente voz residual
+      </button>
+      <small style={{ color: "var(--calamus-muted)" }}>Voces menores: densidad de mundo sin cierre total.</small>
+    </div>
+  );
+}
+
+function HypertextFCaseEditorSelector() {
+  const [editor, setEditor] = useState<"erwin" | "nevet" | "nepon" | "lector">("erwin");
+  const rationale = {
+    erwin: "Ordena por culpa y arrepentimiento tardio.",
+    nevet: "Ordena por trazabilidad y lagunas de datos.",
+    nepon: "Ordena por heridas y memoria comun.",
+    lector: "Ordena por impacto emocional y hallazgo accidental."
+  };
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <select value={editor} onChange={(e) => setEditor(e.target.value as "erwin" | "nevet" | "nepon" | "lector")}>
+        <option value="erwin">Editor implicito: Erwin lucido</option>
+        <option value="nevet">Editor implicito: Nevet</option>
+        <option value="nepon">Editor implicito: Nepón anonimo</option>
+        <option value="lector">Editor implicito: lector</option>
+      </select>
+      <p style={{ margin: 0, border: "1px solid var(--calamus-border)", borderRadius: 8, padding: 10 }}>{rationale[editor]}</p>
+      <small style={{ color: "var(--calamus-muted)" }}>Curaduria variable segun voz editora implicita.</small>
+    </div>
+  );
+}
+
+function HypertextFCaseVoiceMixer() {
+  const [emil, setEmil] = useState(true);
+  const [vera, setVera] = useState(false);
+  const [nevet, setNevet] = useState(false);
+  const lines = [
+    emil ? "Emil: 'Mi salida no es tragedia, es coherencia.'" : "",
+    vera ? "Vera: 'Mostrar la cicatriz me devuelve control.'" : "",
+    nevet ? "Nevet: 'No confirmo, solo reconstruyo.'" : ""
+  ].filter(Boolean);
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <label>
+          <input type="checkbox" checked={emil} onChange={(e) => setEmil(e.target.checked)} /> Emil
+        </label>
+        <label>
+          <input type="checkbox" checked={vera} onChange={(e) => setVera(e.target.checked)} /> Vera
+        </label>
+        <label>
+          <input type="checkbox" checked={nevet} onChange={(e) => setNevet(e.target.checked)} /> Nevet
+        </label>
+      </div>
+      <div style={{ border: "1px solid var(--calamus-border)", borderRadius: 8, padding: 10 }}>
+        {lines.length ? lines.map((line) => <p key={line} style={{ margin: "0 0 6px" }}>{line}</p>) : <p style={{ margin: 0 }}>Sin voces activas.</p>}
+      </div>
+      <small style={{ color: "var(--calamus-muted)" }}>Mixer de polifonia para calibrar pesos de voz.</small>
+    </div>
+  );
+}
+
+const hypertextCasesF: HypertextCase[] = [
+  { id: "ola-f-emil", title: "Emil / solicitudes", summary: "Evolucion 1 -> 2847 del deseo de baja.", render: () => <HypertextFCaseEmilSolicitudes /> },
+  { id: "ola-f-vera", title: "Vera / manifiesto", summary: "Soberania corporal via exhibicion del dano.", render: () => <HypertextFCaseVeraManifesto /> },
+  { id: "ola-f-jonas", title: "Jonas / inocencia", summary: "Ternura y horror en capas desalineadas.", render: () => <HypertextFCaseJonasInocencia /> },
+  { id: "ola-f-nevet", title: "Nevet / doble canal", summary: "Publico tecnico vs privado sensible.", render: () => <HypertextFCaseNevetDual /> },
+  { id: "ola-f-thomas", title: "Thomas / ausencia", summary: "Fragmento minimo como duelo formal.", render: () => <HypertextFCaseThomasAbsence /> },
+  { id: "ola-f-residual", title: "Voces residuales", summary: "Microtestimonios para densificar Nullheim.", render: () => <HypertextFCaseResidualVoices /> },
+  { id: "ola-f-editor", title: "Editor implicito", summary: "Curaduria variable segun quien compila.", render: () => <HypertextFCaseEditorSelector /> },
+  { id: "ola-f-mixer", title: "Mixer de polifonia", summary: "Calibracion de peso por voz narrativa.", render: () => <HypertextFCaseVoiceMixer /> }
+];
+
+function HypertextGCaseMemoryBudget() {
+  const [memory, setMemory] = useState(100);
+  const files = [
+    { id: "fragment_final", cost: 24 },
+    { id: "matriz_implantacion", cost: 18 },
+    { id: "diario_vera", cost: 12 },
+    { id: "iteration_log", cost: 20 }
+  ];
+  const open = (cost: number) => setMemory((value) => Math.max(0, value - cost));
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <p style={{ margin: 0 }}>Memoria de sesion: {memory}%</p>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {files.map((file) => (
+          <button key={file.id} type="button" onClick={() => open(file.cost)} disabled={memory === 0}>
+            Abrir {file.id} (-{file.cost})
+          </button>
+        ))}
+      </div>
+      <small style={{ color: "var(--calamus-muted)" }}>Regla: no todos los archivos cuestan lo mismo.</small>
+    </div>
+  );
+}
+
+function HypertextGCaseDirectedCorruption() {
+  const [level, setLevel] = useState(0);
+  const sentence = "Emil encontro una manzana roja junto a Thomas en Nullheim.";
+  const tokens = sentence.split(" ");
+  const transformed = tokens.map((word) => {
+    const clean = word.toLowerCase().replace(/[.,]/g, "");
+    if (level >= 1 && clean === "roja") return "▓▓▓▓";
+    if (level >= 2 && (clean === "manzana" || clean === "thomas")) return "▓▓▓▓▓▓";
+    if (level >= 3 && clean === "nullheim") return "▓▓▓▓▓▓▓▓";
+    return word;
+  });
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <button type="button" onClick={() => setLevel((value) => Math.min(3, value + 1))}>
+        Corromper archivo
+      </button>
+      <button type="button" onClick={() => setLevel(0)}>
+        Reiniciar demo
+      </button>
+      <p style={{ margin: 0, border: "1px solid var(--calamus-border)", borderRadius: 8, padding: 10 }}>
+        {transformed.join(" ")}
+      </p>
+      <small style={{ color: "var(--calamus-muted)" }}>Regla: rojo primero; luego sustantivos y nombres propios.</small>
+    </div>
+  );
+}
+
+function HypertextGCaseProtectFiles() {
+  const candidates = ["fragment_final", "matriz_implantacion", "carta_a_la_nina", "iteration_log", "foto_brisbane"];
+  const [protectedFiles, setProtectedFiles] = useState<string[]>([]);
+  const toggle = (id: string) =>
+    setProtectedFiles((prev) => {
+      if (prev.includes(id)) return prev.filter((entry) => entry !== id);
+      if (prev.length >= 3) return prev;
+      return [...prev, id];
+    });
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <p style={{ margin: 0 }}>Blindaje disponible: {3 - protectedFiles.length}/3</p>
+      <div style={{ display: "grid", gap: 6 }}>
+        {candidates.map((id) => (
+          <label key={id}>
+            <input type="checkbox" checked={protectedFiles.includes(id)} onChange={() => toggle(id)} /> te veo :: {id}
+          </label>
+        ))}
+      </div>
+      <small style={{ color: "var(--calamus-muted)" }}>Regla: solo puedes proteger pocos archivos nucleares.</small>
+    </div>
+  );
+}
+
+function HypertextGCaseOrderConsequences() {
+  const [path, setPath] = useState<string[]>([]);
+  const read = (step: string) => setPath((prev) => [...prev, step]);
+  const penalty = path.includes("revelacion_iteraciones") && !path.includes("entrevista_emil");
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <button type="button" onClick={() => read("entrevista_emil")}>
+          Leer entrevista Emil
+        </button>
+        <button type="button" onClick={() => read("revelacion_iteraciones")}>
+          Leer revelacion iteraciones
+        </button>
+        <button type="button" onClick={() => setPath([])}>
+          Reset orden
+        </button>
+      </div>
+      <p style={{ margin: 0 }}>Ruta: {path.length ? path.join(" -> ") : "sin lectura"}</p>
+      <p style={{ margin: 0, color: penalty ? "#ffb366" : "var(--calamus-muted)" }}>
+        {penalty ? "Consecuencia: interpretacion inestable (faltan anclas emocionales)." : "Ruta estable por ahora."}
+      </p>
+      <small style={{ color: "var(--calamus-muted)" }}>Regla: el orden altera lo comprensible.</small>
+    </div>
+  );
+}
+
+function HypertextGCaseNoBackup() {
+  const [deleted, setDeleted] = useState<string[]>([]);
+  const files = ["clinical_rosa.md", "fragment_final.txt", "lullaby_742.mp3"];
+  const remove = (id: string) => setDeleted((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {files.map((id) => (
+          <button key={id} type="button" onClick={() => remove(id)} disabled={deleted.includes(id)}>
+            {deleted.includes(id) ? `${id} eliminado` : `Eliminar ${id}`}
+          </button>
+        ))}
+      </div>
+      <p style={{ margin: 0 }}>Archivos perdidos: {deleted.length ? deleted.join(", ") : "ninguno"}</p>
+      <small style={{ color: "var(--calamus-muted)" }}>Regla: sin respaldo, sin undo narrativo.</small>
+    </div>
+  );
+}
+
+function HypertextGCaseCrossFolderDamage() {
+  const [ruinsDamage, setRuinsDamage] = useState(0);
+  const [logOpened, setLogOpened] = useState(0);
+  const openIterationLog = () => {
+    setLogOpened((value) => value + 1);
+    setRuinsDamage((value) => Math.min(5, value + 2));
+  };
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <button type="button" onClick={openIterationLog}>
+        Abrir .nevet_private/iteration_log.txt
+      </button>
+      <p style={{ margin: 0 }}>Aperturas del log: {logOpened}</p>
+      <p style={{ margin: 0 }}>Archivos de /ruins/ afectados: {ruinsDamage}</p>
+      <small style={{ color: "var(--calamus-muted)" }}>
+        Regla: algunos archivos activan corrupcion colateral en otros folders.
+      </small>
+    </div>
+  );
+}
+
+function HypertextGCaseIterationDrift() {
+  const [iteration, setIteration] = useState(742);
+  const quality = Math.max(0, 100 - (iteration - 742) * 9);
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <button type="button" onClick={() => setIteration((value) => value + 1)}>
+        Forzar reinicio
+      </button>
+      <button type="button" onClick={() => setIteration(742)}>
+        Volver a 742
+      </button>
+      <p style={{ margin: 0 }}>Iteracion activa: {iteration}</p>
+      <p style={{ margin: 0 }}>Calidad de reconstruccion: {quality}%</p>
+      <small style={{ color: "var(--calamus-muted)" }}>Regla: cada iteracion posterior es peor.</small>
+    </div>
+  );
+}
+
+function HypertextGCaseCollapseGate() {
+  const [memory, setMemory] = useState(36);
+  const [collapse, setCollapse] = useState(false);
+  const consume = () => {
+    setMemory((value) => {
+      const next = Math.max(0, value - 12);
+      if (next === 0) setCollapse(true);
+      return next;
+    });
+  };
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <button type="button" onClick={consume} disabled={collapse}>
+        Consumir memoria
+      </button>
+      <p style={{ margin: 0 }}>Memoria restante: {memory}%</p>
+      <p style={{ margin: 0, border: "1px solid var(--calamus-border)", borderRadius: 8, padding: 10 }}>
+        {collapse ? "COLLAPSE::terminal offline :: artefacto final -> foto_brisbane_2032" : "Sistema activo"}
+      </p>
+      <small style={{ color: "var(--calamus-muted)" }}>Regla: MEMORIA=0 activa colapso terminal.</small>
+    </div>
+  );
+}
+
+const hypertextCasesG: HypertextCase[] = [
+  { id: "ola-g-memory", title: "Budget de memoria", summary: "Costo diferencial por tipo de archivo.", render: () => <HypertextGCaseMemoryBudget /> },
+  { id: "ola-g-directed-corruption", title: "Corrupcion dirigida", summary: "Rojo y nombres se pierden primero.", render: () => <HypertextGCaseDirectedCorruption /> },
+  { id: "ola-g-protect", title: "Blindaje te veo", summary: "Proteccion limitada de archivos clave.", render: () => <HypertextGCaseProtectFiles /> },
+  { id: "ola-g-order", title: "Consecuencias de orden", summary: "Leer fuera de secuencia altera interpretacion.", render: () => <HypertextGCaseOrderConsequences /> },
+  { id: "ola-g-no-backup", title: "Sin respaldo", summary: "Perdidas permanentes sin undo.", render: () => <HypertextGCaseNoBackup /> },
+  { id: "ola-g-cross-damage", title: "Corrupcion colateral", summary: "Un archivo puede danar otro folder.", render: () => <HypertextGCaseCrossFolderDamage /> },
+  { id: "ola-g-iteration", title: "Drift de iteraciones", summary: "Cada reinicio reduce calidad de mundo.", render: () => <HypertextGCaseIterationDrift /> },
+  { id: "ola-g-collapse", title: "Puerta de colapso", summary: "MEMORIA cero dispara cierre terminal.", render: () => <HypertextGCaseCollapseGate /> }
+];
+
+function HypertextHCaseCollapseSequence() {
+  const [step, setStep] = useState(0);
+  const phases = [
+    "Sistema estable.",
+    "Advertencia: degradacion de buffers.",
+    "Interfaz terminal inestable.",
+    "Desvinculacion de procesos activos.",
+    "COLLAPSE::offline"
+  ];
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <button type="button" onClick={() => setStep((value) => Math.min(phases.length - 1, value + 1))}>
+        Avanzar colapso
+      </button>
+      <button type="button" onClick={() => setStep(0)}>
+        Reiniciar secuencia
+      </button>
+      <p style={{ margin: 0, border: "1px solid var(--calamus-border)", borderRadius: 8, padding: 10 }}>
+        {phases[step]}
+      </p>
+      <small style={{ color: "var(--calamus-muted)" }}>Final interactivo por fases de desintegracion.</small>
+    </div>
+  );
+}
+
+function HypertextHCaseSingleRedFlash() {
+  const [flash, setFlash] = useState(false);
+  const [used, setUsed] = useState(false);
+  const trigger = () => {
+    if (used) return;
+    setFlash(true);
+    setUsed(true);
+    setTimeout(() => setFlash(false), 180);
+  };
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <button type="button" onClick={trigger} disabled={used}>
+        Ejecutar destello rojo unico
+      </button>
+      <div
+        style={{
+          minHeight: 78,
+          border: "1px solid var(--calamus-border)",
+          borderRadius: 8,
+          padding: 10,
+          background: flash ? "#ff2f2f" : "transparent",
+          color: flash ? "#fff" : "inherit"
+        }}
+      >
+        {flash ? "ROJO" : used ? "Destello consumido." : "Esperando evento unico."}
+      </div>
+      <small style={{ color: "var(--calamus-muted)" }}>Canon: el rojo aparece una sola vez.</small>
+    </div>
+  );
+}
+
+function HypertextHCaseBrisbaneArtifact() {
+  const [captionOn, setCaptionOn] = useState(false);
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <img
+        src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=60"
+        alt="Artefacto visual final de la memoria de Brisbane"
+        style={{ width: "100%", borderRadius: 10, maxHeight: 260, objectFit: "cover" }}
+      />
+      <button type="button" onClick={() => setCaptionOn((value) => !value)}>
+        {captionOn ? "Ocultar pie" : "Mostrar pie editorial"}
+      </button>
+      <p style={{ margin: 0 }}>
+        {captionOn ? "Brisbane 2032. Ultimo residuo de memoria antes del silencio." : "Sin texto. Solo artefacto."}
+      </p>
+      <small style={{ color: "var(--calamus-muted)" }}>Ultimo objeto tras el colapso.</small>
+    </div>
+  );
+}
+
+function HypertextHCaseTypographicDisintegration() {
+  const [erosion, setErosion] = useState(0);
+  const lines = [
+    "el cielo naranja de nullheim",
+    "poco a poco enmudece",
+    "entre olas de luz",
+    "y cromosilencio"
+  ];
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <input type="range" min={0} max={100} value={erosion} onChange={(e) => setErosion(Number(e.target.value))} />
+      <div style={{ border: "1px solid var(--calamus-border)", borderRadius: 8, padding: 10 }}>
+        {lines.map((line, index) => (
+          <p
+            key={line}
+            style={{
+              margin: "4px 0",
+              opacity: 1 - erosion / (140 - index * 20),
+              letterSpacing: `${erosion / 120}px`,
+              transform: `translateX(${(erosion / 8) * index}px)`
+            }}
+          >
+            {line}
+          </p>
+        ))}
+      </div>
+      <small style={{ color: "var(--calamus-muted)" }}>Version libro: degradacion formal fija.</small>
+    </div>
+  );
+}
+
+function HypertextHCaseEndingVariants() {
+  const [ending, setEnding] = useState<"interactiva" | "escrita" | "hibrida">("interactiva");
+  const output = {
+    interactiva: "Terminal colapsa; intentas volver a /vera y ya no existe.",
+    escrita: "Las paginas se vacian, el indice miente, la foto queda al final.",
+    hibrida: "Libro como artefacto curado + rastro de session destruida."
+  };
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <select value={ending} onChange={(e) => setEnding(e.target.value as "interactiva" | "escrita" | "hibrida")}>
+        <option value="interactiva">Final interactiva</option>
+        <option value="escrita">Final novela escrita</option>
+        <option value="hibrida">Final hibrida</option>
+      </select>
+      <p style={{ margin: 0, border: "1px solid var(--calamus-border)", borderRadius: 8, padding: 10 }}>{output[ending]}</p>
+      <small style={{ color: "var(--calamus-muted)" }}>Comparador de cierre por arquitectura.</small>
+    </div>
+  );
+}
+
+function HypertextHCaseResidualIndex() {
+  const [showMissing, setShowMissing] = useState(true);
+  const listed = ["/emil/solicitud_2847", "/nevet/.private/iteration_log", "/ruins/brisbane_photo", "/thomas/placeholder"];
+  const missing = ["/music/cromosilencia_final", "/vera/retratos/serie_b", "/appendix/boltz_fluctuations_1906"];
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <p style={{ margin: 0 }}>Indice editor:</p>
+      <ul style={{ margin: 0, paddingLeft: 20 }}>
+        {listed.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+      <button type="button" onClick={() => setShowMissing((value) => !value)}>
+        {showMissing ? "Ocultar ausentes" : "Mostrar ausentes"}
+      </button>
+      {showMissing ? (
+        <p style={{ margin: 0, color: "var(--calamus-muted)" }}>Referencias ausentes: {missing.join(" | ")}</p>
+      ) : null}
+      <small style={{ color: "var(--calamus-muted)" }}>Indice que expone todo lo que el lector no recibio.</small>
+    </div>
+  );
+}
+
+function HypertextHCasePostCollapseSilence() {
+  const [mute, setMute] = useState(false);
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <button type="button" onClick={() => setMute((value) => !value)}>
+        {mute ? "Restaurar texto" : "Aplicar silencio post-colapso"}
+      </button>
+      <div style={{ minHeight: 90, border: "1px solid var(--calamus-border)", borderRadius: 8, padding: 10 }}>
+        {mute ? (
+          <p style={{ margin: 0, opacity: 0.08 }}>cromosilencio cromosilencio cromosilencio</p>
+        ) : (
+          <p style={{ margin: 0 }}>Despues del cierre no hay narrador: solo residuo y polvo.</p>
+        )}
+      </div>
+      <small style={{ color: "var(--calamus-muted)" }}>Estado de silencio como epilogo mecanico.</small>
+    </div>
+  );
+}
+
+function HypertextHCaseReaderAfterlife() {
+  const [kept, setKept] = useState<string[]>([]);
+  const options = ["solicitud_2847", "matriz_implantacion", "foto_brisbane", "nota_freud", "iteration_log"];
+  const toggle = (id: string) =>
+    setKept((prev) => (prev.includes(id) ? prev.filter((entry) => entry !== id) : [...prev, id]));
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <p style={{ margin: 0 }}>Que se lleva el lector despues del colapso:</p>
+      <div style={{ display: "grid", gap: 6 }}>
+        {options.map((id) => (
+          <label key={id}>
+            <input type="checkbox" checked={kept.includes(id)} onChange={() => toggle(id)} /> {id}
+          </label>
+        ))}
+      </div>
+      <p style={{ margin: 0 }}>Lectura residual: {kept.length ? kept.join(", ") : "ningun resto retenido"}</p>
+      <small style={{ color: "var(--calamus-muted)" }}>El final tambien es curaduria en la memoria del lector.</small>
+    </div>
+  );
+}
+
+const hypertextCasesH: HypertextCase[] = [
+  { id: "ola-h-collapse-seq", title: "Secuencia de colapso", summary: "Cierre escalonado del sistema.", render: () => <HypertextHCaseCollapseSequence /> },
+  { id: "ola-h-red-flash", title: "Destello rojo unico", summary: "Evento cromatico irrepetible.", render: () => <HypertextHCaseSingleRedFlash /> },
+  { id: "ola-h-brisbane", title: "Artefacto Brisbane", summary: "La foto como ultimo remanente.", render: () => <HypertextHCaseBrisbaneArtifact /> },
+  { id: "ola-h-typographic", title: "Desintegracion tipografica", summary: "Equivalente libro del colapso.", render: () => <HypertextHCaseTypographicDisintegration /> },
+  { id: "ola-h-variants", title: "Variantes de cierre", summary: "Comparador interactiva/escrita/hibrida.", render: () => <HypertextHCaseEndingVariants /> },
+  { id: "ola-h-index", title: "Indice residual", summary: "Lista de incluidos y ausentes.", render: () => <HypertextHCaseResidualIndex /> },
+  { id: "ola-h-silence", title: "Post-colapso silencioso", summary: "Epílogo sin voz narrativa.", render: () => <HypertextHCasePostCollapseSilence /> },
+  { id: "ola-h-afterlife", title: "Memoria del lector", summary: "Que sobrevive en quien leyo.", render: () => <HypertextHCaseReaderAfterlife /> }
+];
+
+function HypertextICaseCanonCompass() {
+  const [axis, setAxis] = useState<"daltonismo" | "demencia" | "entropia" | "iteracion">("daltonismo");
+  const content = {
+    daltonismo: "Rojo ausente no por olvido: por huella constitutiva del patron base.",
+    demencia: "El deterioro de Erwin es disipacion del patron, no simple patologia clinica.",
+    entropia: "Todo avance narrativo ocurre bajo perdida irreversible de estructura.",
+    iteracion: "La 742 no es simbolo: es estado actual de una cadena degradada."
+  };
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <select
+        value={axis}
+        onChange={(e) => setAxis(e.target.value as "daltonismo" | "demencia" | "entropia" | "iteracion")}
+      >
+        <option value="daltonismo">Eje rojo ausente</option>
+        <option value="demencia">Eje memoria en disolucion</option>
+        <option value="entropia">Eje entropico</option>
+        <option value="iteracion">Eje de iteraciones</option>
+      </select>
+      <p style={{ margin: 0, border: "1px solid var(--calamus-border)", borderRadius: 8, padding: 10 }}>{content[axis]}</p>
+      <small style={{ color: "var(--calamus-muted)" }}>Capa I: compas canonico para evaluar decisiones.</small>
+    </div>
+  );
+}
+
+function HypertextICaseLayerFit() {
+  const [layer, setLayer] = useState<"espina" | "voces" | "sustrato" | "erosion">("espina");
+  const [idea, setIdea] = useState("Matriz de implantacion con lectura parcial.");
+  const hint = {
+    espina: "Pregunta: avanza el arco Emil-Nevet-Erwin?",
+    voces: "Pregunta: refuerza una voz especifica sin duplicar otra?",
+    sustrato: "Pregunta: agrega mundo o solo ornamento?",
+    erosion: "Pregunta: el acto de leer produce perdida real?"
+  };
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <input value={idea} onChange={(e) => setIdea(e.target.value)} />
+      <select value={layer} onChange={(e) => setLayer(e.target.value as "espina" | "voces" | "sustrato" | "erosion")}>
+        <option value="espina">Espina</option>
+        <option value="voces">Voces</option>
+        <option value="sustrato">Sustrato</option>
+        <option value="erosion">Erosion</option>
+      </select>
+      <p style={{ margin: 0 }}>
+        Idea: "{idea}" {"->"} {hint[layer]}
+      </p>
+      <small style={{ color: "var(--calamus-muted)" }}>Capa I: clasificador de ideas por arquitectura.</small>
+    </div>
+  );
+}
+
+function HypertextICaseScaleCheck() {
+  const [value, setValue] = useState(2);
+  const labels = ["baja", "media", "alta", "nuclear"];
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <input type="range" min={0} max={3} step={1} value={value} onChange={(e) => setValue(Number(e.target.value))} />
+      <p style={{ margin: 0 }}>Impacto canonico estimado: {labels[value]}</p>
+      <small style={{ color: "var(--calamus-muted)" }}>Capa I: priorizacion rapida para no dispersarse.</small>
+    </div>
+  );
+}
+
+function HypertextICaseReferenceBridge() {
+  const [ref, setRef] = useState<"hol" | "breathe" | "voidopolis" | "palefire">("hol");
+  const map = {
+    hol: "House of Leaves -> aparato critico que compite con texto principal.",
+    breathe: "Breathe -> contexto del lector como input diegetico.",
+    voidopolis: "Voidopolis -> leer consume la legibilidad del objeto.",
+    palefire: "Pale Fire -> editor implicito que distorsiona sentido."
+  };
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <button type="button" onClick={() => setRef("hol")}>
+          House of Leaves
+        </button>
+        <button type="button" onClick={() => setRef("breathe")}>
+          Breathe
+        </button>
+        <button type="button" onClick={() => setRef("voidopolis")}>
+          Voidopolis
+        </button>
+        <button type="button" onClick={() => setRef("palefire")}>
+          Pale Fire
+        </button>
+      </div>
+      <p style={{ margin: 0 }}>{map[ref]}</p>
+      <small style={{ color: "var(--calamus-muted)" }}>Capa I: puente directo referente {"->"} regla de diseno.</small>
+    </div>
+  );
+}
+
+const hypertextCasesI: HypertextCase[] = [
+  { id: "ola-i-canon-compass", title: "Compas canonico", summary: "Ejes ontologicos para validar decisiones.", render: () => <HypertextICaseCanonCompass /> },
+  { id: "ola-i-layer-fit", title: "Encaje por capa", summary: "Clasifica ideas en espina/voces/sustrato/erosion.", render: () => <HypertextICaseLayerFit /> },
+  { id: "ola-i-scale", title: "Escala de impacto", summary: "Prioriza por impacto canonico.", render: () => <HypertextICaseScaleCheck /> },
+  { id: "ola-i-bridge", title: "Puente de referentes", summary: "Traduccion de influencias a mecanismos concretos.", render: () => <HypertextICaseReferenceBridge /> }
+];
+
+function HypertextJCaseVeraPack() {
+  const [mode, setMode] = useState<"diario" | "manifiesto">("diario");
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <button type="button" onClick={() => setMode((v) => (v === "diario" ? "manifiesto" : "diario"))}>
+        Cambiar registro Vera
+      </button>
+      <p style={{ margin: 0 }}>{mode === "diario" ? "diario_ojo_izquierdo: trazo torpe y soberano." : "manifiesto_ornamental: el dano como estetica activa."}</p>
+      <small style={{ color: "var(--calamus-muted)" }}>Capa J: paquete curado de voz Vera.</small>
+    </div>
+  );
+}
+
+function HypertextJCaseEmilPack() {
+  const [item, setItem] = useState<"solicitud" | "pesadilla" | "carta">("solicitud");
+  const text = {
+    solicitud: "Formulario 77-B: voluntad de baja reiterada.",
+    pesadilla: "Nina, machete y culpa implantada como residuo persistente.",
+    carta: "Carta a la nina: intento de reparar lo irrecuperable."
+  };
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <select value={item} onChange={(e) => setItem(e.target.value as "solicitud" | "pesadilla" | "carta")}>
+        <option value="solicitud">Solicitud</option>
+        <option value="pesadilla">Pesadilla</option>
+        <option value="carta">Carta a la nina</option>
+      </select>
+      <p style={{ margin: 0 }}>{text[item]}</p>
+      <small style={{ color: "var(--calamus-muted)" }}>Capa J: paquete curado de voz Emil.</small>
+    </div>
+  );
+}
+
+function HypertextJCaseNevetPack() {
+  const [privateOn, setPrivateOn] = useState(false);
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <label>
+        <input type="checkbox" checked={privateOn} onChange={(e) => setPrivateOn(e.target.checked)} /> Mostrar .nevet_private
+      </label>
+      <p style={{ margin: 0 }}>
+        {privateOn
+          ? "notas_sobre_el_rojo + poemas_sobre_sentir + iteration_log."
+          : "logs publicos + base clinica + matriz de implantacion."}
+      </p>
+      <small style={{ color: "var(--calamus-muted)" }}>Capa J: paquete curado de voz Nevet.</small>
+    </div>
+  );
+}
+
+function HypertextJCaseVoiceBalance() {
+  const [weights, setWeights] = useState({ emil: 4, nevet: 4, vera: 3, jonas: 2, thomas: 1 });
+  const total = weights.emil + weights.nevet + weights.vera + weights.jonas + weights.thomas;
+  return (
+    <div style={{ display: "grid", gap: 8 }}>
+      <p style={{ margin: 0 }}>Peso relativo por voz (suma {total})</p>
+      {Object.entries(weights).map(([key, value]) => (
+        <label key={key}>
+          {key}:{" "}
+          <input
+            type="range"
+            min={0}
+            max={6}
+            value={value}
+            onChange={(e) => setWeights((prev) => ({ ...prev, [key]: Number(e.target.value) }))}
+          />
+        </label>
+      ))}
+      <small style={{ color: "var(--calamus-muted)" }}>Capa J: calibrador de polifonia sin tocar olas previas.</small>
+    </div>
+  );
+}
+
+const hypertextCasesJ: HypertextCase[] = [
+  { id: "ola-j-vera", title: "Pack Vera", summary: "Diario y manifiesto en rotacion.", render: () => <HypertextJCaseVeraPack /> },
+  { id: "ola-j-emil", title: "Pack Emil", summary: "Solicitud, pesadilla y carta en triada.", render: () => <HypertextJCaseEmilPack /> },
+  { id: "ola-j-nevet", title: "Pack Nevet", summary: "Publico vs privado como doble canal.", render: () => <HypertextJCaseNevetPack /> },
+  { id: "ola-j-balance", title: "Balance de voces", summary: "Control de pesos narrativos por personaje.", render: () => <HypertextJCaseVoiceBalance /> }
+];
+
+function HypertextKCaseRulePreset() {
+  const [preset, setPreset] = useState<"suave" | "canonica" | "severa">("canonica");
+  const cfg = {
+    suave: "Memoria -8 por archivo; 1 corrupcion colateral cada 3 lecturas.",
+    canonica: "Memoria -12 por archivo; rojo y nombres caen primero.",
+    severa: "Memoria -16 por archivo; colateral inmediata + sin respaldo."
+  };
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <select value={preset} onChange={(e) => setPreset(e.target.value as "suave" | "canonica" | "severa")}>
+        <option value="suave">Preset suave</option>
+        <option value="canonica">Preset canonica</option>
+        <option value="severa">Preset severa</option>
+      </select>
+      <p style={{ margin: 0 }}>{cfg[preset]}</p>
+      <small style={{ color: "var(--calamus-muted)" }}>Capa K: presets de reglas para prototipado rapido.</small>
+    </div>
+  );
+}
+
+function HypertextKCaseProtectionDraft() {
+  const [slots, setSlots] = useState(3);
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <input type="range" min={1} max={5} value={slots} onChange={(e) => setSlots(Number(e.target.value))} />
+      <p style={{ margin: 0 }}>Slots de "te veo": {slots}</p>
+      <small style={{ color: "var(--calamus-muted)" }}>Capa K: tuning de proteccion antes de hardcodear.</small>
+    </div>
+  );
+}
+
+function HypertextKCaseOrderMatrix() {
+  const [a, setA] = useState(false);
+  const [b, setB] = useState(false);
+  const [c, setC] = useState(false);
+  const score = (a ? 1 : 0) + (b ? 1 : 0) + (c ? 1 : 0);
+  return (
+    <div style={{ display: "grid", gap: 8 }}>
+      <label>
+        <input type="checkbox" checked={a} onChange={(e) => setA(e.target.checked)} /> leer entrevista_emil primero
+      </label>
+      <label>
+        <input type="checkbox" checked={b} onChange={(e) => setB(e.target.checked)} /> leer matriz_implantacion segundo
+      </label>
+      <label>
+        <input type="checkbox" checked={c} onChange={(e) => setC(e.target.checked)} /> leer iteration_log al final
+      </label>
+      <p style={{ margin: 0 }}>Estabilidad de lectura: {score}/3</p>
+      <small style={{ color: "var(--calamus-muted)" }}>Capa K: matriz de orden recomendado.</small>
+    </div>
+  );
+}
+
+function HypertextKCaseFailureModes() {
+  const [mode, setMode] = useState<"lectura" | "sistema" | "editorial">("lectura");
+  const detail = {
+    lectura: "Fallo: lector abre nucleares temprano y agota memoria.",
+    sistema: "Fallo: regla de colateral borra anclas demasiado pronto.",
+    editorial: "Fallo: aparato de notas devora espina y desorienta sin retorno."
+  };
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button type="button" onClick={() => setMode("lectura")}>
+          Lectura
+        </button>
+        <button type="button" onClick={() => setMode("sistema")}>
+          Sistema
+        </button>
+        <button type="button" onClick={() => setMode("editorial")}>
+          Editorial
+        </button>
+      </div>
+      <p style={{ margin: 0 }}>{detail[mode]}</p>
+      <small style={{ color: "var(--calamus-muted)" }}>Capa K: catalogo de riesgos antes de implementar duro.</small>
+    </div>
+  );
+}
+
+const hypertextCasesK: HypertextCase[] = [
+  { id: "ola-k-preset", title: "Preset de reglas", summary: "Suave/canonica/severa para memoria y corrupcion.", render: () => <HypertextKCaseRulePreset /> },
+  { id: "ola-k-protect", title: "Draft de proteccion", summary: "Ajuste de slots para 'te veo'.", render: () => <HypertextKCaseProtectionDraft /> },
+  { id: "ola-k-order", title: "Matriz de orden", summary: "Secuencia recomendada para estabilidad.", render: () => <HypertextKCaseOrderMatrix /> },
+  { id: "ola-k-failures", title: "Modos de falla", summary: "Riesgos de lectura/sistema/editorial.", render: () => <HypertextKCaseFailureModes /> }
+];
+
+function HypertextLCaseFinalPack() {
+  const [active, setActive] = useState<"flash" | "foto" | "silencio">("flash");
+  const result = {
+    flash: "Evento unico: rojo irrumpe y marca cierre irreversible.",
+    foto: "Artefacto final: Brisbane 2032 sin pie de pagina.",
+    silencio: "Post-cierre: texto se atenura hasta casi desaparecer."
+  };
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <select value={active} onChange={(e) => setActive(e.target.value as "flash" | "foto" | "silencio")}>
+        <option value="flash">Flash rojo</option>
+        <option value="foto">Foto Brisbane</option>
+        <option value="silencio">Silencio final</option>
+      </select>
+      <p style={{ margin: 0 }}>{result[active]}</p>
+      <small style={{ color: "var(--calamus-muted)" }}>Capa L: paquete minimo de cierre canonico.</small>
+    </div>
+  );
+}
+
+function HypertextLCaseReaderResidue() {
+  const [residue, setResidue] = useState<string[]>([]);
+  const items = ["culpa", "rojo", "foto", "nevet", "silencio"];
+  return (
+    <div style={{ display: "grid", gap: 8 }}>
+      {items.map((item) => (
+        <label key={item}>
+          <input
+            type="checkbox"
+            checked={residue.includes(item)}
+            onChange={() =>
+              setResidue((prev) => (prev.includes(item) ? prev.filter((entry) => entry !== item) : [...prev, item]))
+            }
+          />{" "}
+          {item}
+        </label>
+      ))}
+      <p style={{ margin: 0 }}>Residuo emocional: {residue.length ? residue.join(" / ") : "sin anclajes retenidos"}</p>
+      <small style={{ color: "var(--calamus-muted)" }}>Capa L: post-lectura como parte del diseno.</small>
+    </div>
+  );
+}
+
+function HypertextLCaseEditionCompare() {
+  const [edition, setEdition] = useState<"en" | "es">("es");
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <label>
+        Edicion:
+        <select value={edition} onChange={(e) => setEdition(e.target.value as "en" | "es")}>
+          <option value="es">ES</option>
+          <option value="en">EN</option>
+        </select>
+      </label>
+      <p style={{ margin: 0 }}>
+        {edition === "es"
+          ? "Edicion ES: cadencia de frase y respiracion tipografica hispana."
+          : "EN edition: syntax rhythm shifts and alters page pressure."}
+      </p>
+      <small style={{ color: "var(--calamus-muted)" }}>Capa L: control de cierre por edicion separada.</small>
+    </div>
+  );
+}
+
+function HypertextLCaseGoForward() {
+  const [ready, setReady] = useState(false);
+  return (
+    <div style={{ display: "grid", gap: 10 }}>
+      <button type="button" onClick={() => setReady((value) => !value)}>
+        {ready ? "Desmarcar" : "Marcar kit I-L como base de sprint"}
+      </button>
+      <p style={{ margin: 0 }}>{ready ? "Listo para convertir casos curados en backlog ejecutable." : "Pendiente de curaduria final."}</p>
+      <small style={{ color: "var(--calamus-muted)" }}>Capa L: salida operativa para siguiente iteracion.</small>
+    </div>
+  );
+}
+
+const hypertextCasesL: HypertextCase[] = [
+  { id: "ola-l-final-pack", title: "Pack de cierre", summary: "Flash + foto + silencio en paquete minimo.", render: () => <HypertextLCaseFinalPack /> },
+  { id: "ola-l-residue", title: "Residuo del lector", summary: "Que queda tras el colapso.", render: () => <HypertextLCaseReaderResidue /> },
+  { id: "ola-l-editions", title: "Comparativa EN/ES", summary: "Cierre calibrado por edicion separada.", render: () => <HypertextLCaseEditionCompare /> },
+  { id: "ola-l-forward", title: "Listo para sprint", summary: "Puente de curaduria a ejecucion.", render: () => <HypertextLCaseGoForward /> }
+];
+
 export default function App() {
   const [mode, setMode] = useState<ReaderMode>("scroll");
   const [activeScenario, setActiveScenario] = useState<string>(scenarios[0].id);
@@ -973,6 +2184,14 @@ export default function App() {
   const [activeHypertextCaseBId, setActiveHypertextCaseBId] = useState(hypertextCasesB[0].id);
   const [activeHypertextCaseCId, setActiveHypertextCaseCId] = useState(hypertextCasesC[0].id);
   const [activeHypertextCaseDId, setActiveHypertextCaseDId] = useState(hypertextCasesD[0].id);
+  const [activeHypertextCaseEId, setActiveHypertextCaseEId] = useState(hypertextCasesE[0].id);
+  const [activeHypertextCaseFId, setActiveHypertextCaseFId] = useState(hypertextCasesF[0].id);
+  const [activeHypertextCaseGId, setActiveHypertextCaseGId] = useState(hypertextCasesG[0].id);
+  const [activeHypertextCaseHId, setActiveHypertextCaseHId] = useState(hypertextCasesH[0].id);
+  const [activeHypertextCaseIId, setActiveHypertextCaseIId] = useState(hypertextCasesI[0].id);
+  const [activeHypertextCaseJId, setActiveHypertextCaseJId] = useState(hypertextCasesJ[0].id);
+  const [activeHypertextCaseKId, setActiveHypertextCaseKId] = useState(hypertextCasesK[0].id);
+  const [activeHypertextCaseLId, setActiveHypertextCaseLId] = useState(hypertextCasesL[0].id);
 
   // Pasamos un theme vacío solo para ejercitar el tipo público sin anular el tema definido por CSS.
   const theme: ReaderTheme = useMemo(() => ({}), []);
@@ -1010,6 +2229,22 @@ export default function App() {
     hypertextCasesC.find((entry) => entry.id === activeHypertextCaseCId) ?? hypertextCasesC[0];
   const activeHypertextCaseD =
     hypertextCasesD.find((entry) => entry.id === activeHypertextCaseDId) ?? hypertextCasesD[0];
+  const activeHypertextCaseE =
+    hypertextCasesE.find((entry) => entry.id === activeHypertextCaseEId) ?? hypertextCasesE[0];
+  const activeHypertextCaseF =
+    hypertextCasesF.find((entry) => entry.id === activeHypertextCaseFId) ?? hypertextCasesF[0];
+  const activeHypertextCaseG =
+    hypertextCasesG.find((entry) => entry.id === activeHypertextCaseGId) ?? hypertextCasesG[0];
+  const activeHypertextCaseH =
+    hypertextCasesH.find((entry) => entry.id === activeHypertextCaseHId) ?? hypertextCasesH[0];
+  const activeHypertextCaseI =
+    hypertextCasesI.find((entry) => entry.id === activeHypertextCaseIId) ?? hypertextCasesI[0];
+  const activeHypertextCaseJ =
+    hypertextCasesJ.find((entry) => entry.id === activeHypertextCaseJId) ?? hypertextCasesJ[0];
+  const activeHypertextCaseK =
+    hypertextCasesK.find((entry) => entry.id === activeHypertextCaseKId) ?? hypertextCasesK[0];
+  const activeHypertextCaseL =
+    hypertextCasesL.find((entry) => entry.id === activeHypertextCaseLId) ?? hypertextCasesL[0];
   const [activeRegression, setActiveRegression] = useState<string>(visibleRegressionCases[0].id);
   const regression =
     visibleRegressionCases.find((entry) => entry.id === activeRegression) ?? visibleRegressionCases[0];
@@ -1080,6 +2315,99 @@ export default function App() {
 
       <div style={{ maxWidth: 860, margin: "0 auto" }}>
         <Reader content={sampleContent} mode={mode} theme={theme} />
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "18px auto 18px" }}>
+        <div
+          style={{
+            border: "1px solid var(--calamus-terminal-border)",
+            borderRadius: 12,
+            padding: 12,
+            background: "var(--calamus-panel)"
+          }}
+        >
+          <p
+            style={{
+              margin: "0 0 8px",
+              fontFamily: "var(--calamus-mono-font)",
+              fontSize: 12,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "var(--calamus-terminal-muted)"
+            }}
+          >
+            Guia rapida de uso
+          </p>
+          <p style={{ margin: "0 0 6px" }}>
+            Usa <strong>Olas E-H</strong> cuando quieras explorar material narrativo expandido (canon, voces, sistema y colapso) en modo laboratorio creativo.
+          </p>
+          <p style={{ margin: "0 0 6px" }}>
+            Usa <strong>Olas I-L</strong> cuando quieras curar decisiones: compás canónico, packs de voz, presets de reglas y cierre editorial listo para sprint.
+          </p>
+          <p style={{ margin: "0 0 12px", color: "var(--calamus-terminal-muted)" }}>
+            Flujo recomendado: E/F (inspiración) {"->"} G/H (mecánicas y final) {"->"} I/J/K/L (curaduría y consolidación).
+          </p>
+          <p
+            style={{
+              margin: "0 0 6px",
+              fontFamily: "var(--calamus-mono-font)",
+              fontSize: 11,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "var(--calamus-terminal-muted)"
+            }}
+          >
+            Plan maestro (sandbox) — trabajo en orden
+          </p>
+          <ol style={{ margin: "0 0 12px", paddingLeft: 20, fontSize: 14, lineHeight: 1.55 }}>
+            <li style={{ marginBottom: 6 }}>
+              <strong>Hípertexto A-D</strong> (más abajo): validar ergonomía multimedia, ergódica y metalenguaje antes de cargar Cromosilencia pesada.
+            </li>
+            <li style={{ marginBottom: 6 }}>
+              <strong>E-H</strong> — sacar jugo exploratorio (Qué cuenta el mundo, con qué voces, bajo qué reglas, cómo cierra/colapsa).
+            </li>
+            <li style={{ marginBottom: 6 }}>
+              <strong>I-L</strong> — volcar lo anterior en briefs ejecutables (brújula editorial, selección de voz, presets de sistema, salida lista para desarrollo/nullheim).
+            </li>
+            <li style={{ marginBottom: 6 }}>
+              <strong>Biblia sonora</strong> — en paralelo, por escena u ola: anotar <em>cues</em> (silencio, archivo, procedural, glitch, texto-como-trigger…).
+              Aquí placeholders valen; el contrato vive en{" "}
+              <code style={{ fontSize: "0.92em" }}>sceneContract.v1.ts</code> y la familia <code style={{ fontSize: "0.92em" }}>matriz</code> (más abajo). Objetivo: sonido como arquitectura de tiempo y espacio, no adorno suelto.
+            </li>
+            <li>
+              <strong>SceneContract lab (familia matriz)</strong>: prueba técnica de la misma ficción formalmente tipada (
+              JSON, copiar, variantes texto/audio/híbrido/apócrifa). Puente natural hacia consumo en{" "}
+              <code style={{ fontSize: "0.92em" }}>nullheim</code>.
+            </li>
+          </ol>
+          <details style={{ margin: 0 }}>
+            <summary
+              style={{
+                cursor: "pointer",
+                fontSize: 13,
+                color: "var(--calamus-terminal-emphasis)",
+                marginBottom: 6,
+                fontFamily: "var(--calamus-mono-font)"
+              }}
+            >
+              Mapa rápido E {"->"} L + Biblia sonora
+            </summary>
+            <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, lineHeight: 1.55, color: "var(--calamus-terminal-fg)" }}>
+              <li>
+                <strong>E</strong> Cromosilencia · <strong>F</strong> voces · <strong>G</strong> reglas · <strong>H</strong> finales/colapso
+              </li>
+              <li>
+                <strong>I</strong> compás/curaduría · <strong>J</strong> packs de voz · <strong>K</strong> presets de reglas · <strong>L</strong> cierre curado {"->"} sprint
+              </li>
+              <li>
+                Biblia sonora (checklist liviano): ¿qué cue por capa?, ¿motor (<code style={{ fontSize: "0.92em" }}>silence</code>/<code style={{ fontSize: "0.92em" }}>file</code>/otro)?, ¿sale al salir la escena? — reflejarlo luego en <code style={{ fontSize: "0.92em" }}>SceneContractV1.audio</code>.
+              </li>
+            </ul>
+          </details>
+
+          <SandboxRunbookPanel />
+          <BibliaSonoraScratchpad />
+        </div>
       </div>
 
       <div style={{ maxWidth: 860, margin: "22px auto 10px", padding: "0 4px" }}>
@@ -1228,6 +2556,7 @@ export default function App() {
               <option value="short">Short</option>
               <option value="sample">Sample</option>
               <option value="dense">Dense</option>
+              <option value="cromosilencia">Cromosilencia</option>
             </select>
           </label>
 
@@ -1371,6 +2700,7 @@ export default function App() {
 
       <div style={{ maxWidth: 860, margin: "0 auto 12px", padding: "0 4px" }}>
         <h2
+          id="sandbox-ola-a"
           style={{
             margin: 0,
             fontFamily: "var(--calamus-mono-font)",
@@ -1449,6 +2779,7 @@ export default function App() {
 
       <div style={{ maxWidth: 860, margin: "0 auto 12px", padding: "0 4px" }}>
         <h2
+          id="sandbox-ola-b"
           style={{
             margin: 0,
             fontFamily: "var(--calamus-mono-font)",
@@ -1527,6 +2858,7 @@ export default function App() {
 
       <div style={{ maxWidth: 860, margin: "0 auto 12px", padding: "0 4px" }}>
         <h2
+          id="sandbox-ola-c"
           style={{
             margin: 0,
             fontFamily: "var(--calamus-mono-font)",
@@ -1605,6 +2937,7 @@ export default function App() {
 
       <div style={{ maxWidth: 860, margin: "0 auto 12px", padding: "0 4px" }}>
         <h2
+          id="sandbox-ola-d"
           style={{
             margin: 0,
             fontFamily: "var(--calamus-mono-font)",
@@ -1679,6 +3012,442 @@ export default function App() {
             {activeHypertextCaseD.render()}
           </Reader>
         </div>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto 12px", padding: "0 4px" }}>
+        <h2
+          id="sandbox-ola-e"
+          style={{
+            margin: 0,
+            fontFamily: "var(--calamus-mono-font)",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            fontSize: 13,
+            color: "var(--calamus-terminal-muted)"
+          }}
+        >
+          Hypertext Lab - Ola E (cromosilencia)
+        </h2>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto 12px" }}>
+        <div style={{ display: "grid", gap: 8 }}>
+          {hypertextCasesE.map((entry) => {
+            const selected = entry.id === activeHypertextCaseE.id;
+            return (
+              <button
+                key={entry.id}
+                type="button"
+                onClick={() => setActiveHypertextCaseEId(entry.id)}
+                style={{
+                  textAlign: "left",
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  border: `1px solid ${
+                    selected ? "var(--calamus-terminal-emphasis)" : "var(--calamus-terminal-border)"
+                  }`,
+                  background: selected ? "rgba(240, 217, 168, 0.12)" : "var(--calamus-panel)",
+                  color: selected ? "var(--calamus-terminal-emphasis)" : "var(--calamus-terminal-fg)",
+                  cursor: "pointer"
+                }}
+              >
+                <strong style={{ display: "block" }}>{entry.title}</strong>
+                <span style={{ fontSize: 13, color: "var(--calamus-terminal-muted)" }}>{entry.summary}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto 90px" }}>
+        <div
+          style={{
+            border: "1px solid var(--calamus-terminal-border)",
+            borderRadius: 12,
+            padding: 12,
+            background: "var(--calamus-panel)"
+          }}
+        >
+          <p
+            style={{
+              margin: "0 0 10px",
+              fontFamily: "var(--calamus-mono-font)",
+              fontSize: 12,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "var(--calamus-terminal-muted)"
+            }}
+          >
+            Caso activo: {activeHypertextCaseE.title}
+          </p>
+          <Reader
+            mode="hypertext"
+            content={{
+              title: `Ola E :: ${activeHypertextCaseE.title}`,
+              subtitle: "cromosilencia expansion set",
+              body: []
+            }}
+          >
+            {activeHypertextCaseE.render()}
+          </Reader>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto 12px", padding: "0 4px" }}>
+        <h2
+          id="sandbox-ola-f"
+          style={{
+            margin: 0,
+            fontFamily: "var(--calamus-mono-font)",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            fontSize: 13,
+            color: "var(--calamus-terminal-muted)"
+          }}
+        >
+          Hypertext Lab - Ola F (voces/polifonia)
+        </h2>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto 12px" }}>
+        <div style={{ display: "grid", gap: 8 }}>
+          {hypertextCasesF.map((entry) => {
+            const selected = entry.id === activeHypertextCaseF.id;
+            return (
+              <button
+                key={entry.id}
+                type="button"
+                onClick={() => setActiveHypertextCaseFId(entry.id)}
+                style={{
+                  textAlign: "left",
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  border: `1px solid ${
+                    selected ? "var(--calamus-terminal-emphasis)" : "var(--calamus-terminal-border)"
+                  }`,
+                  background: selected ? "rgba(240, 217, 168, 0.12)" : "var(--calamus-panel)",
+                  color: selected ? "var(--calamus-terminal-emphasis)" : "var(--calamus-terminal-fg)",
+                  cursor: "pointer"
+                }}
+              >
+                <strong style={{ display: "block" }}>{entry.title}</strong>
+                <span style={{ fontSize: 13, color: "var(--calamus-terminal-muted)" }}>{entry.summary}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto 100px" }}>
+        <div
+          style={{
+            border: "1px solid var(--calamus-terminal-border)",
+            borderRadius: 12,
+            padding: 12,
+            background: "var(--calamus-panel)"
+          }}
+        >
+          <p
+            style={{
+              margin: "0 0 10px",
+              fontFamily: "var(--calamus-mono-font)",
+              fontSize: 12,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "var(--calamus-terminal-muted)"
+            }}
+          >
+            Caso activo: {activeHypertextCaseF.title}
+          </p>
+          <Reader
+            mode="hypertext"
+            content={{
+              title: `Ola F :: ${activeHypertextCaseF.title}`,
+              subtitle: "voice architecture playground",
+              body: []
+            }}
+          >
+            {activeHypertextCaseF.render()}
+          </Reader>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto 12px", padding: "0 4px" }}>
+        <h2
+          id="sandbox-ola-g"
+          style={{
+            margin: 0,
+            fontFamily: "var(--calamus-mono-font)",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            fontSize: 13,
+            color: "var(--calamus-terminal-muted)"
+          }}
+        >
+          Hypertext Lab - Ola G (reglas de sistema)
+        </h2>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto 12px" }}>
+        <div style={{ display: "grid", gap: 8 }}>
+          {hypertextCasesG.map((entry) => {
+            const selected = entry.id === activeHypertextCaseG.id;
+            return (
+              <button
+                key={entry.id}
+                type="button"
+                onClick={() => setActiveHypertextCaseGId(entry.id)}
+                style={{
+                  textAlign: "left",
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  border: `1px solid ${
+                    selected ? "var(--calamus-terminal-emphasis)" : "var(--calamus-terminal-border)"
+                  }`,
+                  background: selected ? "rgba(240, 217, 168, 0.12)" : "var(--calamus-panel)",
+                  color: selected ? "var(--calamus-terminal-emphasis)" : "var(--calamus-terminal-fg)",
+                  cursor: "pointer"
+                }}
+              >
+                <strong style={{ display: "block" }}>{entry.title}</strong>
+                <span style={{ fontSize: 13, color: "var(--calamus-terminal-muted)" }}>{entry.summary}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto 110px" }}>
+        <div
+          style={{
+            border: "1px solid var(--calamus-terminal-border)",
+            borderRadius: 12,
+            padding: 12,
+            background: "var(--calamus-panel)"
+          }}
+        >
+          <p
+            style={{
+              margin: "0 0 10px",
+              fontFamily: "var(--calamus-mono-font)",
+              fontSize: 12,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "var(--calamus-terminal-muted)"
+            }}
+          >
+            Caso activo: {activeHypertextCaseG.title}
+          </p>
+          <Reader
+            mode="hypertext"
+            content={{
+              title: `Ola G :: ${activeHypertextCaseG.title}`,
+              subtitle: "system rules playground",
+              body: []
+            }}
+          >
+            {activeHypertextCaseG.render()}
+          </Reader>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto 12px", padding: "0 4px" }}>
+        <h2
+          id="sandbox-ola-h"
+          style={{
+            margin: 0,
+            fontFamily: "var(--calamus-mono-font)",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            fontSize: 13,
+            color: "var(--calamus-terminal-muted)"
+          }}
+        >
+          Hypertext Lab - Ola H (finales/colapso)
+        </h2>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto 12px" }}>
+        <div style={{ display: "grid", gap: 8 }}>
+          {hypertextCasesH.map((entry) => {
+            const selected = entry.id === activeHypertextCaseH.id;
+            return (
+              <button
+                key={entry.id}
+                type="button"
+                onClick={() => setActiveHypertextCaseHId(entry.id)}
+                style={{
+                  textAlign: "left",
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  border: `1px solid ${
+                    selected ? "var(--calamus-terminal-emphasis)" : "var(--calamus-terminal-border)"
+                  }`,
+                  background: selected ? "rgba(240, 217, 168, 0.12)" : "var(--calamus-panel)",
+                  color: selected ? "var(--calamus-terminal-emphasis)" : "var(--calamus-terminal-fg)",
+                  cursor: "pointer"
+                }}
+              >
+                <strong style={{ display: "block" }}>{entry.title}</strong>
+                <span style={{ fontSize: 13, color: "var(--calamus-terminal-muted)" }}>{entry.summary}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto 120px" }}>
+        <div
+          style={{
+            border: "1px solid var(--calamus-terminal-border)",
+            borderRadius: 12,
+            padding: 12,
+            background: "var(--calamus-panel)"
+          }}
+        >
+          <p
+            style={{
+              margin: "0 0 10px",
+              fontFamily: "var(--calamus-mono-font)",
+              fontSize: 12,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "var(--calamus-terminal-muted)"
+            }}
+          >
+            Caso activo: {activeHypertextCaseH.title}
+          </p>
+          <Reader
+            mode="hypertext"
+            content={{
+              title: `Ola H :: ${activeHypertextCaseH.title}`,
+              subtitle: "ending and collapse playground",
+              body: []
+            }}
+          >
+            {activeHypertextCaseH.render()}
+          </Reader>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto 12px", padding: "0 4px" }}>
+        <h2 id="sandbox-ola-i" style={{ margin: 0, fontFamily: "var(--calamus-mono-font)", letterSpacing: "0.08em", textTransform: "uppercase", fontSize: 13, color: "var(--calamus-terminal-muted)" }}>
+          Hypertext Lab - Ola I (compas/curaduria)
+        </h2>
+      </div>
+      <div style={{ maxWidth: 860, margin: "0 auto 12px" }}>
+        <div style={{ display: "grid", gap: 8 }}>
+          {hypertextCasesI.map((entry) => {
+            const selected = entry.id === activeHypertextCaseI.id;
+            return (
+              <button key={entry.id} type="button" onClick={() => setActiveHypertextCaseIId(entry.id)} style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: `1px solid ${selected ? "var(--calamus-terminal-emphasis)" : "var(--calamus-terminal-border)"}`, background: selected ? "rgba(240, 217, 168, 0.12)" : "var(--calamus-panel)", color: selected ? "var(--calamus-terminal-emphasis)" : "var(--calamus-terminal-fg)", cursor: "pointer" }}>
+                <strong style={{ display: "block" }}>{entry.title}</strong>
+                <span style={{ fontSize: 13, color: "var(--calamus-terminal-muted)" }}>{entry.summary}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div style={{ maxWidth: 860, margin: "0 auto 70px" }}>
+        <div style={{ border: "1px solid var(--calamus-terminal-border)", borderRadius: 12, padding: 12, background: "var(--calamus-panel)" }}>
+          <p style={{ margin: "0 0 10px", fontFamily: "var(--calamus-mono-font)", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--calamus-terminal-muted)" }}>
+            Caso activo: {activeHypertextCaseI.title}
+          </p>
+          <Reader mode="hypertext" content={{ title: `Ola I :: ${activeHypertextCaseI.title}`, subtitle: "curation compass layer", body: [] }}>
+            {activeHypertextCaseI.render()}
+          </Reader>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto 12px", padding: "0 4px" }}>
+        <h2 id="sandbox-ola-j" style={{ margin: 0, fontFamily: "var(--calamus-mono-font)", letterSpacing: "0.08em", textTransform: "uppercase", fontSize: 13, color: "var(--calamus-terminal-muted)" }}>
+          Hypertext Lab - Ola J (packs de voz)
+        </h2>
+      </div>
+      <div style={{ maxWidth: 860, margin: "0 auto 12px" }}>
+        <div style={{ display: "grid", gap: 8 }}>
+          {hypertextCasesJ.map((entry) => {
+            const selected = entry.id === activeHypertextCaseJ.id;
+            return (
+              <button key={entry.id} type="button" onClick={() => setActiveHypertextCaseJId(entry.id)} style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: `1px solid ${selected ? "var(--calamus-terminal-emphasis)" : "var(--calamus-terminal-border)"}`, background: selected ? "rgba(240, 217, 168, 0.12)" : "var(--calamus-panel)", color: selected ? "var(--calamus-terminal-emphasis)" : "var(--calamus-terminal-fg)", cursor: "pointer" }}>
+                <strong style={{ display: "block" }}>{entry.title}</strong>
+                <span style={{ fontSize: 13, color: "var(--calamus-terminal-muted)" }}>{entry.summary}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div style={{ maxWidth: 860, margin: "0 auto 70px" }}>
+        <div style={{ border: "1px solid var(--calamus-terminal-border)", borderRadius: 12, padding: 12, background: "var(--calamus-panel)" }}>
+          <p style={{ margin: "0 0 10px", fontFamily: "var(--calamus-mono-font)", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--calamus-terminal-muted)" }}>
+            Caso activo: {activeHypertextCaseJ.title}
+          </p>
+          <Reader mode="hypertext" content={{ title: `Ola J :: ${activeHypertextCaseJ.title}`, subtitle: "voice pack layer", body: [] }}>
+            {activeHypertextCaseJ.render()}
+          </Reader>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto 12px", padding: "0 4px" }}>
+        <h2 id="sandbox-ola-k" style={{ margin: 0, fontFamily: "var(--calamus-mono-font)", letterSpacing: "0.08em", textTransform: "uppercase", fontSize: 13, color: "var(--calamus-terminal-muted)" }}>
+          Hypertext Lab - Ola K (presets de reglas)
+        </h2>
+      </div>
+      <div style={{ maxWidth: 860, margin: "0 auto 12px" }}>
+        <div style={{ display: "grid", gap: 8 }}>
+          {hypertextCasesK.map((entry) => {
+            const selected = entry.id === activeHypertextCaseK.id;
+            return (
+              <button key={entry.id} type="button" onClick={() => setActiveHypertextCaseKId(entry.id)} style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: `1px solid ${selected ? "var(--calamus-terminal-emphasis)" : "var(--calamus-terminal-border)"}`, background: selected ? "rgba(240, 217, 168, 0.12)" : "var(--calamus-panel)", color: selected ? "var(--calamus-terminal-emphasis)" : "var(--calamus-terminal-fg)", cursor: "pointer" }}>
+                <strong style={{ display: "block" }}>{entry.title}</strong>
+                <span style={{ fontSize: 13, color: "var(--calamus-terminal-muted)" }}>{entry.summary}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div style={{ maxWidth: 860, margin: "0 auto 70px" }}>
+        <div style={{ border: "1px solid var(--calamus-terminal-border)", borderRadius: 12, padding: 12, background: "var(--calamus-panel)" }}>
+          <p style={{ margin: "0 0 10px", fontFamily: "var(--calamus-mono-font)", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--calamus-terminal-muted)" }}>
+            Caso activo: {activeHypertextCaseK.title}
+          </p>
+          <Reader mode="hypertext" content={{ title: `Ola K :: ${activeHypertextCaseK.title}`, subtitle: "rule preset layer", body: [] }}>
+            {activeHypertextCaseK.render()}
+          </Reader>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto 12px", padding: "0 4px" }}>
+        <h2 id="sandbox-ola-l" style={{ margin: 0, fontFamily: "var(--calamus-mono-font)", letterSpacing: "0.08em", textTransform: "uppercase", fontSize: 13, color: "var(--calamus-terminal-muted)" }}>
+          Hypertext Lab - Ola L (cierre curado)
+        </h2>
+      </div>
+      <div style={{ maxWidth: 860, margin: "0 auto 12px" }}>
+        <div style={{ display: "grid", gap: 8 }}>
+          {hypertextCasesL.map((entry) => {
+            const selected = entry.id === activeHypertextCaseL.id;
+            return (
+              <button key={entry.id} type="button" onClick={() => setActiveHypertextCaseLId(entry.id)} style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: `1px solid ${selected ? "var(--calamus-terminal-emphasis)" : "var(--calamus-terminal-border)"}`, background: selected ? "rgba(240, 217, 168, 0.12)" : "var(--calamus-panel)", color: selected ? "var(--calamus-terminal-emphasis)" : "var(--calamus-terminal-fg)", cursor: "pointer" }}>
+                <strong style={{ display: "block" }}>{entry.title}</strong>
+                <span style={{ fontSize: 13, color: "var(--calamus-terminal-muted)" }}>{entry.summary}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div style={{ maxWidth: 860, margin: "0 auto 130px" }}>
+        <div style={{ border: "1px solid var(--calamus-terminal-border)", borderRadius: 12, padding: 12, background: "var(--calamus-panel)" }}>
+          <p style={{ margin: "0 0 10px", fontFamily: "var(--calamus-mono-font)", fontSize: 12, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--calamus-terminal-muted)" }}>
+            Caso activo: {activeHypertextCaseL.title}
+          </p>
+          <Reader mode="hypertext" content={{ title: `Ola L :: ${activeHypertextCaseL.title}`, subtitle: "final curation layer", body: [] }}>
+            {activeHypertextCaseL.render()}
+          </Reader>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 860, margin: "0 auto 130px", paddingBottom: 40 }}>
+        <MatrizFamilyLab />
       </div>
     </div>
   );
