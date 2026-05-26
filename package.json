@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "verify:local": "cd ../calamus && npm run build && npm run typecheck && cd ../calamus-sandbox && npm run build"
+    "verify:local": "cd ../calamus && npm run build && npm run typecheck && cd ../calamus-sandbox && npm run build",
+    "test": "vitest run"
   },
   "dependencies": {
     "calamus": "file:../calamus",
@@ -19,6 +20,7 @@
     "@types/react-dom": "^18.0.0",
     "@vitejs/plugin-react": "^4.0.0",
     "typescript": "^5.0.0",
-    "vite": "^5.0.0"
+    "vite": "^5.0.0",
+    "vitest": "^2.1.9"
   }
 }
